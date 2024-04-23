@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:structure/config/di/di_setup.dart';
+import 'package:structure/feature/home/view/home_view_model.dart';
+import 'package:structure/feature/home/view/index.dart';
 
 enum ViewRoute {
   home,
@@ -23,15 +26,15 @@ final kRouter = GoRouter(
   ],
   routes: [
     /// Auth
-    // GoRoute(
-    //   path: '/',
-    //   name: 'Home',
-    //   builder: (context, state) {
-    //     return ChangeNotifierProvider(
-    //       create: (context) => getIt<AuthViewModel>(),
-    //       child: const LoginView(),
-    //     );
-    //   },
-    // ),
+    GoRoute(
+      path: '/',
+      name: 'Home',
+      builder: (context, state) {
+        return ChangeNotifierProvider(
+          create: (context) => getIt<HomeViewModel>(),
+          child: const HomeView(),
+        );
+      },
+    ),
   ],
 );
