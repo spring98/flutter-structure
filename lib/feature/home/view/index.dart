@@ -3,7 +3,7 @@ import 'package:intl/intl.dart' as intl;
 import 'package:provider/provider.dart';
 import 'package:structure/core/utils/cache/widget/cache_image.dart';
 import 'package:structure/feature/home/view/home_view_model.dart';
-import 'package:structure/feature/image/domain/model/image_model.dart';
+import 'package:structure/feature/image/domain/model/image_meta_model.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -55,7 +55,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _card(HomeViewModel p, ImageModel model) {
+  Widget _card(HomeViewModel p, ImageMetaModel model) {
     Color clickedColor = Colors.white;
 
     if (p.imageId == model.imageId) {

@@ -52,12 +52,12 @@ class ImageRemoteDataSourceImpl extends ImageRemoteDataSource {
   }
 
   @override
-  Future<Result<List<ImageDto>>> fetchImages() async {
+  Future<Result<List<ImageMetaDto>>> fetchImages() async {
     try {
       final snapshot = await _store.collection("images").get();
 
       final result =
-          snapshot.docs.map((e) => ImageDto.fromJson(e.data())).toList();
+          snapshot.docs.map((e) => ImageMetaDto.fromJson(e.data())).toList();
 
       return Result.success(result);
     } catch (e) {

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:structure/config/di/di_setup.dart';
 import 'package:structure/config/model/sealed_result.dart';
-import 'package:structure/feature/image/domain/model/file_model.dart';
+import 'package:structure/feature/image/domain/model/image_model.dart';
 import 'package:structure/feature/image/domain/use_cases/fetch_image_use_case.dart';
 
 class CacheImage extends StatefulWidget {
@@ -23,7 +23,7 @@ class CacheImage extends StatefulWidget {
 
 class _CacheImageState extends State<CacheImage> {
   final _useCase = getIt<FetchImageUseCase>();
-  Future<Result<FileModel>>? _imageFuture;
+  Future<Result<ImageModel>>? _imageFuture;
 
   @override
   void initState() {
@@ -39,7 +39,7 @@ class _CacheImageState extends State<CacheImage> {
   Widget build(BuildContext context) {
     // 인메모리 캐시에 해당 파일이 없는 경우
     // 서버에 해당 파일을 요청
-    return FutureBuilder<Result<FileModel>>(
+    return FutureBuilder<Result<ImageModel>>(
       future: _imageFuture,
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
@@ -57,7 +57,7 @@ class _CacheImageState extends State<CacheImage> {
             final result = snapshot.data!;
             switch (result) {
               // 성공적으로 서버로 부터 이미지 파일을 받는 경우
-              case Success<FileModel>():
+              case Success<ImageModel>():
                 return Column(
                   children: [
                     SizedBox(
@@ -78,7 +78,7 @@ class _CacheImageState extends State<CacheImage> {
                 );
 
               // 서버로 부터 이미지 파일을 받는 데 실패 한 경우
-              case Error<FileModel>():
+              case Error<ImageModel>():
                 return _emptyImage();
             }
         }

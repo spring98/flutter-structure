@@ -10,6 +10,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:get_it/get_it.dart' as _i1;
 import 'package:injectable/injectable.dart' as _i2;
+import 'package:structure/feature/home/domain/use_cases/index.dart' as _i13;
 import 'package:structure/feature/home/view/home_view_model.dart' as _i14;
 import 'package:structure/feature/image/data/data_source/local/image_local_data_source.dart'
     as _i3;
@@ -29,7 +30,6 @@ import 'package:structure/feature/image/domain/use_cases/fetch_image_use_case.da
     as _i11;
 import 'package:structure/feature/image/domain/use_cases/fetch_images_use_case.dart'
     as _i12;
-import 'package:structure/feature/home/domain/use_cases/index.dart' as _i13;
 import 'package:structure/feature/image/domain/use_cases/update_image_use_case.dart'
     as _i9;
 

@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:structure/config/model/result.dart';
@@ -10,7 +9,7 @@ import 'package:structure/feature/image/data/data_source/remote/image_remote_dat
 import 'package:structure/feature/image/data/mapper/image_mapper.dart';
 import 'package:structure/feature/image/data/model/dto/image_dto.dart';
 import 'package:structure/feature/image/data/model/entity/image_entity.dart';
-import 'package:structure/feature/image/domain/model/file_model.dart';
+import 'package:structure/feature/image/domain/model/image_meta_model.dart';
 import 'package:structure/feature/image/domain/model/image_model.dart';
 import 'package:structure/feature/image/domain/repository/image_repository.dart';
 
@@ -53,46 +52,51 @@ class ImageRepositoryImpl extends ImageRepository {
      *        return Result.success(remote-latest data)
      */
   @override
-  Future<Result<FileModel>> fetchImage(
+  Future<Result<ImageModel>> fetchImage(
       String imageId, DateTime requestUpdateTime) async {
-    final memoryResult = MemoryCache.getFile(imageId);
+    final memoryResult = MemoryCache.getImage(imageId, requestUpdateTime);
 
     // 메모리(램)에 데이터가 있는 경우
     if (memoryResult != null) {
-      print('[IMAGE] 램에서 꺼내는 중');
-      return Result.success(FileModel(memoryResult, SourceType.ram));
+      print('[IMAGE] 램에서 꺼냄');
+      return Result.success(
+        ImageModel(
+          imageId: imageId,
+          updateTime: requestUpdateTime,
+          image: memoryResult,
+          type: SourceType.ram,
+        ),
+      );
     }
 
     // 메모리(램)에 데이터가 없는 경우 로컬(디스크)에서 조회
-    final localResult = await _localDataSource.getByteFile(imageId);
+    final localResult = await _localDataSource.getImage(imageId);
 
     switch (localResult) {
       // 로컬 데이터(디스크)에서 성공적으로 데이터를 가져온 경우
       case Success<ImageEntity>():
-
-        /// final localData = localResult.data.toByteFile();
-        final localData = localResult.data;
+        final localImage = localResult.data.toImageModel();
 
         // 로컬 데이터(디스크)가 최신인 경우 메모리(램)에 저장 후 그대로 반환
-        if (!localData.updateTime.isBefore(requestUpdateTime)) {
-          print('[IMAGE] 디스크에서 꺼내는 중');
-          MemoryCache.setFile(imageId, localData.image);
-          return Result.success(FileModel(localData.image, SourceType.disk));
+        if (!localImage.updateTime.isBefore(requestUpdateTime)) {
+          print('[IMAGE] 디스크에서 꺼냄');
+
+          MemoryCache.setImage(imageId, requestUpdateTime, localImage.image);
+          return Result.success(localImage);
         }
 
         // 로컬 데이터(디스크)가 오래된 경우 리모트(서버)에서 가져옴
-        return _fetchRemoteByteFile(imageId, requestUpdateTime,
-            legacyFile: localData.image);
+        return _fetchImage(imageId, requestUpdateTime,
+            legacyFile: localImage.image);
 
       // 로컬 데이터(디스크)에서 데이터를 가져오는데 실패한 경우
       case Error<ImageEntity>():
         // 리모트(서버) 에서 가져옴
-        return _fetchRemoteByteFile(imageId, requestUpdateTime,
-            legacyFile: null);
+        return _fetchImage(imageId, requestUpdateTime, legacyFile: null);
     }
   }
 
-  Future<Result<FileModel>> _fetchRemoteByteFile(
+  Future<Result<ImageModel>> _fetchImage(
     String fileId,
     DateTime requestUpdateTime, {
     Uint8List? legacyFile,
@@ -102,22 +106,36 @@ class ImageRepositoryImpl extends ImageRepository {
     switch (remoteResult) {
       // 리모트(서버)에서 성공적으로 가져온 경우 메모리(램), 로컬(디스크)에 저장하고, 해당 데이터를 반환
       case Success<Uint8List?>():
-        print('[IMAGE] 서버에서 꺼내는 중');
+        print('[IMAGE] 서버에서 꺼냄');
         final data = remoteResult.data;
         if (data == null) {
           return Result.error('데이터 에러');
         }
 
-        MemoryCache.setFile(fileId, data);
-        _localDataSource.setByteFile(fileId, requestUpdateTime, data);
+        MemoryCache.setImage(fileId, requestUpdateTime, data);
+        _localDataSource.setImage(fileId, requestUpdateTime, data);
 
-        return Result.success(FileModel(data, SourceType.server));
+        return Result.success(
+          ImageModel(
+            imageId: fileId,
+            image: data,
+            updateTime: requestUpdateTime,
+            type: SourceType.server,
+          ),
+        );
 
       // 리모트(서버)에서 데이터를 가져오지 못한 경우
       case Error<Uint8List?>():
         // 오래된 데이터라도 반환
         if (legacyFile != null) {
-          return Result.success(FileModel(legacyFile, SourceType.disk));
+          return Result.success(
+            ImageModel(
+              imageId: fileId,
+              image: legacyFile,
+              updateTime: requestUpdateTime,
+              type: SourceType.disk,
+            ),
+          );
         }
 
         // 오래된 데이터도 없으면 에러 반환
@@ -126,10 +144,10 @@ class ImageRepositoryImpl extends ImageRepository {
   }
 
   @override
-  Future<Result<List<ImageModel>>> fetchImages() async {
+  Future<Result<List<ImageMetaModel>>> fetchImages() async {
     final result = await _remoteDataSource.fetchImages();
     switch (result) {
-      case Success<List<ImageDto>>():
+      case Success<List<ImageMetaDto>>():
         final data = result.data
             .where((e) => e.imageId != null && e.updateTime != null)
             .map((e) => e.toImageModel())
@@ -138,7 +156,7 @@ class ImageRepositoryImpl extends ImageRepository {
         data.sort((a, b) => b.updateTime.compareTo(a.updateTime));
 
         return Result.success(data);
-      case Error<List<ImageDto>>():
+      case Error<List<ImageMetaDto>>():
         return Result.error(result.e);
     }
   }

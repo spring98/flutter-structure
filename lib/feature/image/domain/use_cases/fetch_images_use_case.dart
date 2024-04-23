@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:structure/config/model/sealed_result.dart';
-import 'package:structure/feature/image/domain/model/image_model.dart';
+import 'package:structure/feature/image/domain/model/image_meta_model.dart';
 import 'package:structure/feature/image/domain/repository/image_repository.dart';
 
 @singleton
@@ -9,7 +9,7 @@ class FetchImagesUseCase {
 
   FetchImagesUseCase(this._repository);
 
-  Future<Result<List<ImageModel>>> call() async {
+  Future<Result<List<ImageMetaModel>>> call() async {
     return _repository.fetchImages();
   }
 }

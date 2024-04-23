@@ -5,7 +5,7 @@ import 'package:structure/feature/image/data/model/dto/image_dto.dart';
 
 abstract class ImageRemoteDataSource {
   Future<Result<Uint8List?>> fetchImage(String imageId);
-  Future<Result<List<ImageDto>>> fetchImages();
+  Future<Result<List<ImageMetaDto>>> fetchImages();
   Future<ResultModel> createImage();
   Future<ResultModel> updateImage(String imageId);
 }

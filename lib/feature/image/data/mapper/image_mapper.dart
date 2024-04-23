@@ -1,30 +1,36 @@
 import 'package:structure/feature/image/data/model/dto/image_dto.dart';
 import 'package:structure/feature/image/data/model/entity/image_entity.dart';
+import 'package:structure/feature/image/domain/model/image_meta_model.dart';
 import 'package:structure/feature/image/domain/model/image_model.dart';
 
-extension ToImageModel on ImageDto {
-  ImageModel toImageModel() {
+extension ToImageMetaModel on ImageMetaDto {
+  ImageMetaModel toImageModel() {
     assert(imageId != null);
     assert(updateTime != null);
 
-    return ImageModel(
+    return ImageMetaModel(
       imageId: imageId!,
       updateTime: DateTime.tryParse(updateTime!) ?? DateTime.now(),
     );
   }
 }
 
-extension ToImageDto on ImageModel {
-  ImageDto toImageDto() {
-    return ImageDto(
+extension ToImageMetaDto on ImageMetaModel {
+  ImageMetaDto toImageDto() {
+    return ImageMetaDto(
       imageId: imageId,
       updateTime: updateTime.toString(),
     );
   }
 }
 
-// extension ToImageModelFromEntity on ImageEntity {
-//   ImageModel toImageModel() {
-//     return ImageModel( fileId, updateTime, file);
-//   }
-// }
+extension ToImageModel on ImageEntity {
+  ImageModel toImageModel() {
+    return ImageModel(
+      imageId: imageId,
+      updateTime: updateTime,
+      image: image,
+      type: SourceType.disk,
+    );
+  }
+}

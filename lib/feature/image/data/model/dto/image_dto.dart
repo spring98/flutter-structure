@@ -1,14 +1,14 @@
-class ImageDto {
+class ImageMetaDto {
   final String? imageId;
   final String? updateTime;
 
-  ImageDto({
+  ImageMetaDto({
     required this.imageId,
     required this.updateTime,
   });
 
-  factory ImageDto.fromJson(Map<String, dynamic> json) {
-    return ImageDto(
+  factory ImageMetaDto.fromJson(Map<String, dynamic> json) {
+    return ImageMetaDto(
       imageId: json['imageId'],
       updateTime: json['updateTime'],
     );

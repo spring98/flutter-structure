@@ -11,7 +11,7 @@ class ImageLocalDataSourceImpl implements ImageLocalDataSource {
   static const db = 'image.db';
 
   @override
-  Future<Result<ImageEntity>> getByteFile(String imageId) async {
+  Future<Result<ImageEntity>> getImage(String imageId) async {
     try {
       final box = await Hive.openBox<ImageEntity>(db);
       final data = box.get(imageId);
@@ -27,7 +27,7 @@ class ImageLocalDataSourceImpl implements ImageLocalDataSource {
   }
 
   @override
-  Future<ResultModel> setByteFile(
+  Future<ResultModel> setImage(
       String imageId, DateTime updateTime, Uint8List file) async {
     try {
       final box = await Hive.openBox<ImageEntity>(db);
