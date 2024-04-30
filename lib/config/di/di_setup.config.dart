@@ -30,7 +30,7 @@ import 'package:structure/feature/image/domain/use_cases/delete_all_image_use_ca
     as _i11;
 import 'package:structure/feature/image/domain/use_cases/fetch_image_use_case.dart'
     as _i12;
-import 'package:structure/feature/image/domain/use_cases/fetch_images_use_case.dart'
+import 'package:structure/feature/image/domain/use_cases/fetch_meta_images_use_case.dart'
     as _i13;
 import 'package:structure/feature/image/domain/use_cases/update_image_use_case.dart'
     as _i9;
@@ -62,11 +62,11 @@ extension GetItInjectableX on _i1.GetIt {
         () => _i11.DeleteAllImageUseCase(gh<_i7.ImageRepository>()));
     gh.singleton<_i12.FetchImageUseCase>(
         () => _i12.FetchImageUseCase(gh<_i7.ImageRepository>()));
-    gh.singleton<_i13.FetchImagesUseCase>(
-        () => _i13.FetchImagesUseCase(gh<_i7.ImageRepository>()));
+    gh.singleton<_i13.FetchMetaImagesUseCase>(
+        () => _i13.FetchMetaImagesUseCase(gh<_i7.ImageRepository>()));
     gh.singleton<_i14.HomeUseCases>(() => _i14.HomeUseCases(
           gh<_i10.CreateImageUseCase>(),
-          gh<_i13.FetchImagesUseCase>(),
+          gh<_i13.FetchMetaImagesUseCase>(),
           gh<_i12.FetchImageUseCase>(),
           gh<_i9.UpdateImageUseCase>(),
           gh<_i11.DeleteAllImageUseCase>(),

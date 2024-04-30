@@ -7,7 +7,7 @@ import 'package:structure/config/model/result.dart';
 import 'package:structure/config/model/sealed_result.dart';
 import 'package:structure/core/utils/image/widget/random_image_generator.dart';
 import 'package:structure/feature/image/data/data_source/remote/image_remote_data_source.dart';
-import 'package:structure/feature/image/data/model/dto/image_dto.dart';
+import 'package:structure/feature/image/data/model/dto/meta_image_dto.dart';
 import 'package:uuid/uuid.dart';
 
 @Singleton(as: ImageRemoteDataSource)
@@ -40,11 +40,15 @@ class ImageRemoteDataSourceImpl extends ImageRemoteDataSource {
   }
 
   @override
-  Future<Result<Uint8List?>> fetchImage(String imageId) async {
+  Future<Result<Uint8List>> fetchImage(String imageId) async {
     try {
       final result = await _storage.child("images/$imageId.png").getData();
 
-      print('${result?.length} 바이트');
+      if (result == null) {
+        return Result.error('데이터 에러');
+      }
+
+      print('${result.length} 바이트');
       return Result.success(result);
     } catch (e) {
       return Result.error(e.toString());
@@ -52,12 +56,12 @@ class ImageRemoteDataSourceImpl extends ImageRemoteDataSource {
   }
 
   @override
-  Future<Result<List<ImageMetaDto>>> fetchImages() async {
+  Future<Result<List<MetaImageDto>>> fetchImages() async {
     try {
       final snapshot = await _store.collection("images").get();
 
       final result =
-          snapshot.docs.map((e) => ImageMetaDto.fromJson(e.data())).toList();
+          snapshot.docs.map((e) => MetaImageDto.fromJson(e.data())).toList();
 
       return Result.success(result);
     } catch (e) {

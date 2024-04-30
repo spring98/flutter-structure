@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:injectable/injectable.dart';
 import 'package:structure/config/model/sealed_result.dart';
-import 'package:structure/feature/image/domain/model/image_meta_model.dart';
+import 'package:structure/feature/image/domain/model/meta_image_model.dart';
 import 'package:structure/feature/home/domain/use_cases/index.dart';
 
 @injectable
@@ -9,7 +9,7 @@ class HomeViewModel extends ChangeNotifier {
   final HomeUseCases _useCases;
 
   HomeViewModel(this._useCases) {
-    fetchImages();
+    fetchMetaImages();
   }
 
   bool isLoading = false;
@@ -25,21 +25,21 @@ class HomeViewModel extends ChangeNotifier {
 
     await _useCases.createImageUseCase();
 
-    fetchImages();
+    fetchMetaImages();
   }
 
-  List<ImageMetaModel> images = [];
-  Future<void> fetchImages() async {
+  List<MetaImageModel> images = [];
+  Future<void> fetchMetaImages() async {
     isLoading = true;
     notifyListeners();
 
     final result = await _useCases.fetchImagesUseCase();
 
     switch (result) {
-      case Success<List<ImageMetaModel>>():
+      case Success<List<MetaImageModel>>():
         images = result.data.toList();
 
-      case Error<List<ImageMetaModel>>():
+      case Error<List<MetaImageModel>>():
     }
 
     isLoading = false;
@@ -56,7 +56,7 @@ class HomeViewModel extends ChangeNotifier {
 
     await _useCases.updateImageUseCase(imageId!);
 
-    fetchImages();
+    fetchMetaImages();
   }
 
   Future<void> deleteAllImage() async {

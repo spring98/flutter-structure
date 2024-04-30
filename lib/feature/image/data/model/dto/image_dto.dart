@@ -1,16 +1,13 @@
-class ImageMetaDto {
-  final String? imageId;
-  final String? updateTime;
+import 'dart:typed_data';
 
-  ImageMetaDto({
+class ImageDto {
+  final String imageId;
+  final DateTime updateTime;
+  final Uint8List image;
+
+  ImageDto({
     required this.imageId,
     required this.updateTime,
+    required this.image,
   });
-
-  factory ImageMetaDto.fromJson(Map<String, dynamic> json) {
-    return ImageMetaDto(
-      imageId: json['imageId'],
-      updateTime: json['updateTime'],
-    );
-  }
 }

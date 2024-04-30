@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
@@ -7,9 +9,9 @@ import 'package:structure/core/utils/cache/index.dart';
 import 'package:structure/feature/image/data/data_source/local/image_local_data_source.dart';
 import 'package:structure/feature/image/data/data_source/remote/image_remote_data_source.dart';
 import 'package:structure/feature/image/data/mapper/image_mapper.dart';
-import 'package:structure/feature/image/data/model/dto/image_dto.dart';
+import 'package:structure/feature/image/data/model/dto/meta_image_dto.dart';
 import 'package:structure/feature/image/data/model/entity/image_entity.dart';
-import 'package:structure/feature/image/domain/model/image_meta_model.dart';
+import 'package:structure/feature/image/domain/model/meta_image_model.dart';
 import 'package:structure/feature/image/domain/model/image_model.dart';
 import 'package:structure/feature/image/domain/repository/image_repository.dart';
 
@@ -59,14 +61,7 @@ class ImageRepositoryImpl extends ImageRepository {
     // 메모리(램)에 데이터가 있는 경우
     if (memoryResult != null) {
       print('[IMAGE] 램에서 꺼냄');
-      return Result.success(
-        ImageModel(
-          imageId: imageId,
-          updateTime: requestUpdateTime,
-          image: memoryResult,
-          type: SourceType.ram,
-        ),
-      );
+      return Result.success(memoryResult.toImageModel());
     }
 
     // 메모리(램)에 데이터가 없는 경우 로컬(디스크)에서 조회
@@ -81,7 +76,7 @@ class ImageRepositoryImpl extends ImageRepository {
         if (!localImage.updateTime.isBefore(requestUpdateTime)) {
           print('[IMAGE] 디스크에서 꺼냄');
 
-          MemoryCache.setImage(imageId, requestUpdateTime, localImage.image);
+          MemoryCache.setImage(localImage.toImageDto());
           return Result.success(localImage);
         }
 
@@ -105,49 +100,44 @@ class ImageRepositoryImpl extends ImageRepository {
 
     switch (remoteResult) {
       // 리모트(서버)에서 성공적으로 가져온 경우 메모리(램), 로컬(디스크)에 저장하고, 해당 데이터를 반환
-      case Success<Uint8List?>():
-        print('[IMAGE] 서버에서 꺼냄::$imageId');
-        final data = remoteResult.data;
-        if (data == null) {
-          return Result.error('데이터 에러');
+      case Success<Uint8List>():
+        print('[IMAGE] 서버에서 꺼냄');
+        final imageModel = ImageModel(
+          imageId: imageId,
+          updateTime: requestUpdateTime,
+          image: remoteResult.data,
+          type: SourceType.server,
+        );
+
+        MemoryCache.setImage(imageModel.toImageDto());
+        await _localDataSource.setImage(imageModel.toImageEntity());
+
+        return Result.success(imageModel);
+
+      // 리모트(서버)에서 데이터를 가져오지 못한 경우
+      case Error<Uint8List>():
+        // 오래된 데이터도 없으면 에러 반환
+        if (legacyFile == null) {
+          return Result.error(remoteResult.e);
         }
 
-        MemoryCache.setImage(imageId, requestUpdateTime, data);
-        await _localDataSource.setImage(imageId, requestUpdateTime, data);
-
+        // 오래된 데이터라도 반환
         return Result.success(
           ImageModel(
             imageId: imageId,
-            image: data,
+            image: legacyFile,
             updateTime: requestUpdateTime,
-            type: SourceType.server,
+            type: SourceType.disk,
           ),
         );
-
-      // 리모트(서버)에서 데이터를 가져오지 못한 경우
-      case Error<Uint8List?>():
-        // 오래된 데이터라도 반환
-        if (legacyFile != null) {
-          return Result.success(
-            ImageModel(
-              imageId: imageId,
-              image: legacyFile,
-              updateTime: requestUpdateTime,
-              type: SourceType.disk,
-            ),
-          );
-        }
-
-        // 오래된 데이터도 없으면 에러 반환
-        return Result.error(remoteResult.e);
     }
   }
 
   @override
-  Future<Result<List<ImageMetaModel>>> fetchImages() async {
+  Future<Result<List<MetaImageModel>>> fetchMetaImages() async {
     final result = await _remoteDataSource.fetchImages();
     switch (result) {
-      case Success<List<ImageMetaDto>>():
+      case Success<List<MetaImageDto>>():
         final data = result.data
             .where((e) => e.imageId != null && e.updateTime != null)
             .map((e) => e.toImageModel())
@@ -156,7 +146,7 @@ class ImageRepositoryImpl extends ImageRepository {
         data.sort((a, b) => b.updateTime.compareTo(a.updateTime));
 
         return Result.success(data);
-      case Error<List<ImageMetaDto>>():
+      case Error<List<MetaImageDto>>():
         return Result.error(result.e);
     }
   }

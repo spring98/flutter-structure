@@ -5,8 +5,7 @@ import 'package:structure/feature/image/data/model/entity/image_entity.dart';
 
 abstract class ImageLocalDataSource {
   Future<Result<ImageEntity>> getImage(String fileId);
-  Future<ResultModel> setImage(
-      String fileId, DateTime updateTime, Uint8List file);
+  Future<ResultModel> setImage(ImageEntity imageEntity);
   Future<ResultModel> deleteImage(String imageId);
   Future<ResultModel> deleteAllImage();
 }

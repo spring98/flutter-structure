@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:injectable/injectable.dart';
 import 'package:structure/config/model/result.dart';
 import 'package:structure/config/model/sealed_result.dart';
+import 'package:structure/core/utils/cipher/index.dart';
 import 'package:structure/feature/image/data/data_source/local/image_local_data_source.dart';
 import 'package:structure/feature/image/data/model/entity/image_entity.dart';
 import 'package:synchronized/synchronized.dart';
@@ -29,35 +30,36 @@ class ImageLocalDataSourceImpl implements ImageLocalDataSource {
   }
 
   @override
-  Future<ResultModel> setImage(
-      String imageId, DateTime updateTime, Uint8List file) async {
+  Future<ResultModel> setImage(ImageEntity imageEntity) async {
     await lock.synchronized(() async {
       try {
         final box = await Hive.openBox<ImageEntity>(db);
+        DateTime updateTime = imageEntity.updateTime;
+        String imageId = imageEntity.imageId;
 
         // 이미지 사이즈 계산 및 오래된 이미지 키 찾기
-        String? oldestKey;
-        DateTime oldestDate = DateTime.now();
+        String? oldImageId;
+        DateTime oldUpdateTime = DateTime.now();
 
-        box.values.forEach((image) {
-          if (image.updateTime.isBefore(oldestDate)) {
-            oldestDate = image.updateTime;
-            oldestKey = image.imageId;
+        for (var imageEntity in box.values) {
+          if (imageEntity.updateTime.isBefore(oldUpdateTime)) {
+            oldUpdateTime = imageEntity.updateTime;
+            oldImageId = imageEntity.imageId;
           }
-        });
+        }
 
         // 최대 개수 초과 시 가장 오래된 이미지 삭제
-        if (oldestKey != null && box.values.length == 4) {
+        if (oldImageId != null && box.values.length == 4) {
           // 넣으려고 하는 데이터(updateTime)가 더 최신일 때만 업데이트하기
-          if (updateTime.isAfter(oldestDate)) {
-            await deleteImage(oldestKey!);
-            await box.put(imageId, ImageEntity(imageId, updateTime, file));
+          if (updateTime.isAfter(oldUpdateTime)) {
+            await deleteImage(oldImageId);
+            await box.put(imageId, imageEntity);
           }
         }
 
         // 최대 개수 초과되지 않았을 때
         else {
-          await box.put(imageId, ImageEntity(imageId, updateTime, file));
+          await box.put(imageId, imageEntity);
         }
 
         return ResultModel(isSuccess: true);

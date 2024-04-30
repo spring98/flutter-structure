@@ -1,8 +1,8 @@
-class ImageMetaModel {
+class MetaImageModel {
   final String imageId;
   final DateTime updateTime;
 
-  ImageMetaModel({
+  MetaImageModel({
     required this.imageId,
     required this.updateTime,
   });
