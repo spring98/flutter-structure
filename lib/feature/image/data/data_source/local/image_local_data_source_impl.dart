@@ -5,10 +5,12 @@ import 'package:structure/config/model/result.dart';
 import 'package:structure/config/model/sealed_result.dart';
 import 'package:structure/feature/image/data/data_source/local/image_local_data_source.dart';
 import 'package:structure/feature/image/data/model/entity/image_entity.dart';
+import 'package:synchronized/synchronized.dart';
 
 @Singleton(as: ImageLocalDataSource)
 class ImageLocalDataSourceImpl implements ImageLocalDataSource {
   static const db = 'image.db';
+  final lock = Lock();
 
   @override
   Future<Result<ImageEntity>> getImage(String imageId) async {
@@ -29,9 +31,62 @@ class ImageLocalDataSourceImpl implements ImageLocalDataSource {
   @override
   Future<ResultModel> setImage(
       String imageId, DateTime updateTime, Uint8List file) async {
+    await lock.synchronized(() async {
+      try {
+        final box = await Hive.openBox<ImageEntity>(db);
+
+        // 이미지 사이즈 계산 및 오래된 이미지 키 찾기
+        String? oldestKey;
+        DateTime oldestDate = DateTime.now();
+
+        box.values.forEach((image) {
+          if (image.updateTime.isBefore(oldestDate)) {
+            oldestDate = image.updateTime;
+            oldestKey = image.imageId;
+          }
+        });
+
+        // 최대 개수 초과 시 가장 오래된 이미지 삭제
+        if (oldestKey != null && box.values.length == 4) {
+          // 넣으려고 하는 데이터(updateTime)가 더 최신일 때만 업데이트하기
+          if (updateTime.isAfter(oldestDate)) {
+            await deleteImage(oldestKey!);
+            await box.put(imageId, ImageEntity(imageId, updateTime, file));
+          }
+        }
+
+        // 최대 개수 초과되지 않았을 때
+        else {
+          await box.put(imageId, ImageEntity(imageId, updateTime, file));
+        }
+
+        return ResultModel(isSuccess: true);
+      } catch (e) {
+        return ResultModel(isSuccess: false, message: e.toString());
+      }
+    });
+
+    return ResultModel(isSuccess: true);
+  }
+
+  @override
+  Future<ResultModel> deleteImage(String imageId) async {
     try {
       final box = await Hive.openBox<ImageEntity>(db);
-      await box.put(imageId, ImageEntity(imageId, updateTime, file));
+      await box.delete(imageId);
+      await box.flush();
+
+      return ResultModel(isSuccess: true);
+    } catch (e) {
+      return ResultModel(isSuccess: false, message: e.toString());
+    }
+  }
+
+  @override
+  Future<ResultModel> deleteAllImage() async {
+    try {
+      final box = await Hive.openBox<ImageEntity>(db);
+      await box.clear();
 
       return ResultModel(isSuccess: true);
     } catch (e) {

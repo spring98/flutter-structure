@@ -58,4 +58,14 @@ class HomeViewModel extends ChangeNotifier {
 
     fetchImages();
   }
+
+  Future<void> deleteAllImage() async {
+    isLoading = true;
+    notifyListeners();
+
+    await _useCases.deleteAllImageUseCase();
+
+    isLoading = false;
+    notifyListeners();
+  }
 }

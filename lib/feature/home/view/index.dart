@@ -138,6 +138,13 @@ class _HomeViewState extends State<HomeView> {
               onTap: () => p.updateImage(),
             ),
           ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _button(
+              title: 'Delete Disk',
+              onTap: () => p.deleteAllImage(),
+            ),
+          ),
         ],
       ),
     );

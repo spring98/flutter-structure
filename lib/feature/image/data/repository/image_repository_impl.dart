@@ -97,27 +97,27 @@ class ImageRepositoryImpl extends ImageRepository {
   }
 
   Future<Result<ImageModel>> _fetchImage(
-    String fileId,
+    String imageId,
     DateTime requestUpdateTime, {
     Uint8List? legacyFile,
   }) async {
-    final remoteResult = await _remoteDataSource.fetchImage(fileId);
+    final remoteResult = await _remoteDataSource.fetchImage(imageId);
 
     switch (remoteResult) {
       // 리모트(서버)에서 성공적으로 가져온 경우 메모리(램), 로컬(디스크)에 저장하고, 해당 데이터를 반환
       case Success<Uint8List?>():
-        print('[IMAGE] 서버에서 꺼냄');
+        print('[IMAGE] 서버에서 꺼냄::$imageId');
         final data = remoteResult.data;
         if (data == null) {
           return Result.error('데이터 에러');
         }
 
-        MemoryCache.setImage(fileId, requestUpdateTime, data);
-        _localDataSource.setImage(fileId, requestUpdateTime, data);
+        MemoryCache.setImage(imageId, requestUpdateTime, data);
+        await _localDataSource.setImage(imageId, requestUpdateTime, data);
 
         return Result.success(
           ImageModel(
-            imageId: fileId,
+            imageId: imageId,
             image: data,
             updateTime: requestUpdateTime,
             type: SourceType.server,
@@ -130,7 +130,7 @@ class ImageRepositoryImpl extends ImageRepository {
         if (legacyFile != null) {
           return Result.success(
             ImageModel(
-              imageId: fileId,
+              imageId: imageId,
               image: legacyFile,
               updateTime: requestUpdateTime,
               type: SourceType.disk,
@@ -164,5 +164,10 @@ class ImageRepositoryImpl extends ImageRepository {
   @override
   Future<ResultModel> updateImage(String imageId) async {
     return _remoteDataSource.updateImage(imageId);
+  }
+
+  @override
+  Future<ResultModel> deleteAllImage() {
+    return _localDataSource.deleteAllImage();
   }
 }

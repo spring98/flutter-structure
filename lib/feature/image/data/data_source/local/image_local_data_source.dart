@@ -7,4 +7,6 @@ abstract class ImageLocalDataSource {
   Future<Result<ImageEntity>> getImage(String fileId);
   Future<ResultModel> setImage(
       String fileId, DateTime updateTime, Uint8List file);
+  Future<ResultModel> deleteImage(String imageId);
+  Future<ResultModel> deleteAllImage();
 }

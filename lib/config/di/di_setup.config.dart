@@ -10,8 +10,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:get_it/get_it.dart' as _i1;
 import 'package:injectable/injectable.dart' as _i2;
-import 'package:structure/feature/home/domain/use_cases/index.dart' as _i13;
-import 'package:structure/feature/home/view/home_view_model.dart' as _i14;
+import 'package:structure/feature/home/domain/use_cases/index.dart' as _i14;
+import 'package:structure/feature/home/view/home_view_model.dart' as _i15;
 import 'package:structure/feature/image/data/data_source/local/image_local_data_source.dart'
     as _i3;
 import 'package:structure/feature/image/data/data_source/local/image_local_data_source_impl.dart'
@@ -26,10 +26,12 @@ import 'package:structure/feature/image/domain/repository/image_repository.dart'
     as _i7;
 import 'package:structure/feature/image/domain/use_cases/create_image_use_case.dart'
     as _i10;
-import 'package:structure/feature/image/domain/use_cases/fetch_image_use_case.dart'
+import 'package:structure/feature/image/domain/use_cases/delete_all_image_use_case.dart'
     as _i11;
-import 'package:structure/feature/image/domain/use_cases/fetch_images_use_case.dart'
+import 'package:structure/feature/image/domain/use_cases/fetch_image_use_case.dart'
     as _i12;
+import 'package:structure/feature/image/domain/use_cases/fetch_images_use_case.dart'
+    as _i13;
 import 'package:structure/feature/image/domain/use_cases/update_image_use_case.dart'
     as _i9;
 
@@ -56,18 +58,21 @@ extension GetItInjectableX on _i1.GetIt {
         () => _i9.UpdateImageUseCase(gh<_i7.ImageRepository>()));
     gh.singleton<_i10.CreateImageUseCase>(
         () => _i10.CreateImageUseCase(gh<_i7.ImageRepository>()));
-    gh.singleton<_i11.FetchImageUseCase>(
-        () => _i11.FetchImageUseCase(gh<_i7.ImageRepository>()));
-    gh.singleton<_i12.FetchImagesUseCase>(
-        () => _i12.FetchImagesUseCase(gh<_i7.ImageRepository>()));
-    gh.singleton<_i13.HomeUseCases>(() => _i13.HomeUseCases(
+    gh.singleton<_i11.DeleteAllImageUseCase>(
+        () => _i11.DeleteAllImageUseCase(gh<_i7.ImageRepository>()));
+    gh.singleton<_i12.FetchImageUseCase>(
+        () => _i12.FetchImageUseCase(gh<_i7.ImageRepository>()));
+    gh.singleton<_i13.FetchImagesUseCase>(
+        () => _i13.FetchImagesUseCase(gh<_i7.ImageRepository>()));
+    gh.singleton<_i14.HomeUseCases>(() => _i14.HomeUseCases(
           gh<_i10.CreateImageUseCase>(),
-          gh<_i12.FetchImagesUseCase>(),
-          gh<_i11.FetchImageUseCase>(),
+          gh<_i13.FetchImagesUseCase>(),
+          gh<_i12.FetchImageUseCase>(),
           gh<_i9.UpdateImageUseCase>(),
+          gh<_i11.DeleteAllImageUseCase>(),
         ));
-    gh.factory<_i14.HomeViewModel>(
-        () => _i14.HomeViewModel(gh<_i13.HomeUseCases>()));
+    gh.factory<_i15.HomeViewModel>(
+        () => _i15.HomeViewModel(gh<_i14.HomeUseCases>()));
     return this;
   }
 }

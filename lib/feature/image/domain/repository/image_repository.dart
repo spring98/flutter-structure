@@ -12,4 +12,5 @@ abstract class ImageRepository {
       String imageId, DateTime requestUpdateTime);
 
   Future<ResultModel> updateImage(String imageId);
+  Future<ResultModel> deleteAllImage();
 }
