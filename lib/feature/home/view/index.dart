@@ -21,6 +21,16 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   @override
+  void initState() {
+    super.initState();
+
+    // print('asdfasdf');
+    // Cipher.instance.read('key').then((value) {
+    //   print('value...:::$value');
+    // });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

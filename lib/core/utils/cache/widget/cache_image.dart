@@ -73,7 +73,12 @@ class _CacheImageState extends State<CacheImage> {
                       result.data.type.name(),
                       style: const TextStyle(fontSize: 16),
                       overflow: TextOverflow.ellipsis,
-                    )
+                    ),
+                    // Text(
+                    //   result.data.image.length.toString(),
+                    //   style: const TextStyle(fontSize: 16),
+                    //   overflow: TextOverflow.ellipsis,
+                    // )
                   ],
                 );
 
