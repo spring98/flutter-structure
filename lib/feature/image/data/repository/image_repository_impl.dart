@@ -27,6 +27,29 @@ class ImageRepositoryImpl extends ImageRepository {
     return _remoteDataSource.createImage();
   }
 
+  // @override
+  // Future<Result<ImageModel>> fetchImage(
+  //     String imageId, DateTime requestUpdateTime) async {
+  //   final remoteResult = await _remoteDataSource.fetchImage(imageId);
+  //
+  //   switch (remoteResult) {
+  //     case Success<Uint8List>():
+  //       print('[IMAGE] 서버데이터: ${remoteResult.data.length} bytes');
+  //
+  //       return Result.success(
+  //         ImageModel(
+  //           imageId: imageId,
+  //           updateTime: requestUpdateTime,
+  //           image: remoteResult.data,
+  //           type: SourceType.server,
+  //         ),
+  //       );
+  //
+  //     case Error<Uint8List>():
+  //       return Result.error(remoteResult.e);
+  //   }
+  // }
+
   /*
      *  파라미터 수정하기: fileId, updateTime
      *
@@ -101,7 +124,8 @@ class ImageRepositoryImpl extends ImageRepository {
     switch (remoteResult) {
       // 리모트(서버)에서 성공적으로 가져온 경우 메모리(램), 로컬(디스크)에 저장하고, 해당 데이터를 반환
       case Success<Uint8List>():
-        print('[IMAGE] 서버에서 꺼냄');
+        // print('[IMAGE] 서버에서 꺼냄');
+        print('[IMAGE] 서버데이터: ${remoteResult.data.length} bytes');
         final imageModel = ImageModel(
           imageId: imageId,
           updateTime: requestUpdateTime,

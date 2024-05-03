@@ -48,7 +48,7 @@ class MemoryCache {
       if (updateTime.isAfter(oldUpdateTime)) {
         _cachedFile.remove(oldImageId);
 
-        // 삭제되는 이미지 크기를 빼고 새로 추가되는 이미지의 크기의 합이 5000 보다 작으면 삽입
+        // 삭제되는 이미지 크기를 빼고 새로 추가되는 이미지의 크기의 합이 _maxSize 보다 작으면 삽입
         if (size - oldImageSize + imageSize < _maxSize) {
           _cachedFile[imageId] = imageDto;
         }

@@ -52,7 +52,7 @@ class Cipher {
   Future<String?> read(String key) async {
     try {
       String? value = await _storage.read(key: key);
-      print('Read from secure storage: $value');
+      // print('Read from secure storage: $value');
       return value;
     } catch (e) {
       print('Error reading from secure storage: $e');

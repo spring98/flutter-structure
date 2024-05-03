@@ -48,7 +48,7 @@ class ImageRemoteDataSourceImpl extends ImageRemoteDataSource {
         return Result.error('데이터 에러');
       }
 
-      print('${result.length} 바이트');
+      // print('${result.length} 바이트');
       return Result.success(result);
     } catch (e) {
       return Result.error(e.toString());
