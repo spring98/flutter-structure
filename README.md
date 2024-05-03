@@ -138,15 +138,184 @@ _maxSize = 5000 일 때는 2개의 데이터만 저장가능하지만, _maxSize 
 캐시로직을 반영한 결과 파일 다운로드 API 일일 평균 호출이 52.21% 에서 48.52% 로 3.69 %p 감소하여 7.06% 를 개선할 수 있었습니다.
 
 <br/><br/>
+## E2E 테스트 도입
+
+해당 프로젝트의 가장 중요한 기능은 안전작업 허가서 작성과 허가서에 지정된 결재자 순서대로 결재가 정상적으로 처리되는 것입니다. 프로세스를 요약하면 아래와 같습니다.
+
+1. A 라는 관리자가 결재자 B1 부터 B14 까지 지정하여 허가서를 작성
+2. 허가서가 등록되면 B1 에게 알람이 전송되며 결재를 진행
+3. B1 이 결재를 마치면 B2 에게 알람이 전송되고 결재를 진행
+4. B14 까지 반복
+
+문제는 B1 부터 B14 까지의 인원들이 결재해야하는 화면이 허가서 내 선택한 양식 마다 다르기 때문에 기능이 수정될 때마다 모든 양식에 대해 테스트를 진행해야한다는 점이었습니다. 
+
+모든 양식에 대해 테스트 하려면 25번의 결재과정이 필요 하였고, 결재 마다 1. 로그인 2. 결재 3. 로그아웃 의 프로세스가 강제되었습니다.<br/> 배포 때마다 이러한 휴먼에러와 반복작업을 줄일 수 있는 자동 테스트에 대해 고민하게 되었습니다.
+
+Flutter 에서 제공하는 E2E 테스트 패키지인 integration_test 를 사용하였으며, iOS Simulator 를 지정하여 진행하였습니다. 
+
+관심있는 위젯에 Key 를 지정해서 현재 화면에 해당 위젯이 있는 지 확인 할 수 있고, 클릭 하거나 TextField 에 값을 넣는 등 상호작용이 가능하여 정밀한 테스트가 가능하였습니다. 또한 실제 서버의 API 호출을 사용할 수 있어 라이브 테스트가 가능하였습니다.
+
+
+
+<br/><br/>
+## 자동배포 도입
+
+Flutter 로 개발을 진행하다보니 배포 시 AOS, iOS 두 플랫폼에 대해 각각 빌드한 후 빌드파일을 PlayStore, AppStore 에 GUI 방식으로 조작하여 배포가 진행되기 때문에 다음 단계로 진행하기 위해 지속적으로 화면을 주시하고 있어야 합니다. 
+
+AOS 의 경우 비교적으로 빌드 시간도 짧고 배포과정도 단순하기 때문에 피로감을 크게 느끼지 않았지만 iOS 의 경우는 빌드 중에 과정마다 클릭해야하는 요소들이 존재하고, 빌드 파일이 AppStore 홈페이지에 반영 되는 시간도 꽤 걸리기 때문에 다소 피로감을 느꼈고, 자동배포에 대해 고민하게 되었습니다.
+
+자동 배포에 github actions, fastlane 2가지 툴을 사용하였는데 AOS 와 iOS 의 사용범위가 약간 다릅니다. AOS 의 경우 fastlane 명령 이전에 빌드파일을 생성하지만 iOS 는 fastlane 명령 후 빌드파일을 생성하기 때문입니다. <br/>
+
+Workflow 요약
+
+- git fetch, branch checkout
+- flutter 의존성 설치
+- secrets 데이터 복사
+    
+    AOS
+    
+    - /android/keystore.properties 에 github actions > secrets > keystore 데이터 복사
+    - release.aab 빌드파일 생성
+    
+    iOS
+    
+    - pod 의존성 설치
+    - /ios/fastlane/.env 에 github actions > secrets > apple fastlane password 데이터 복사
+- fastlane beta 실행
+
+마지막으로 fastlane beta 실행이 되면 아래와 같이 작동하게 됩니다.
+
+ - name: Android Beta
+        run: cd android && fastlane beta
+
+ - name: iOS Beta
+        run: cd ios && fastlane beta
+
+<br/>
+
+이러한 과정으로 두 플랫폼에 대해 내부 테스트 환경으로 배포 되며 
 
 
 <br/><br/>
 
+참고 코드는 아래와 같습니다.
+
+<br/>
+
+github actions > workflow.yml
+
+```yaml
+name: Flutter CI
+
+on:
+  push:
+    branches: [ main, release/* ]
+  pull_request:
+    branches: [ main, release/* ]
+
+jobs:
+  build:
+    runs-on: springui-Macmini
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Flutter Version
+        run: fvm use 3.10.0
+
+      - name: Clean Packages
+        run: fvm flutter clean
+
+      - name: Pub Get Packages
+        run: fvm flutter pub get
+
+      - name: Pod 초기화
+        run: rm -f ios/Podfile.lock && rm -rf ios/Pods
+
+      - name: Pod repository 업데이트
+        run: cd ios && pod install
+
+      - name: Write Android keystore.properties file
+        env:
+          PROPERTIES_PATH: "./android/keystore.properties"
+        run: |
+          touch android/keystore.properties
+          echo keyPassword=\${{ secrets.KEY_PROPERTY_KEY_PASSWORD }} > ${{env.PROPERTIES_PATH}}
+          echo storePassword=\${{ secrets.KEY_PROPERTY_STORE_PASSWORD }} >> ${{env.PROPERTIES_PATH}}
+          echo keyAlias=\${{ secrets.KEY_PROPERTY_KEY_ALIAS }} >> ${{env.PROPERTIES_PATH}}
+          echo storeFile=\${{ secrets.KEY_PROPERTY_STORE_FILE }} >> ${{env.PROPERTIES_PATH}}
+
+      - name: Decoding Keystore file
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.keystore
+
+      - name: Write iOS .env file
+        env:
+          FASTLANE_ENV_PATH: "./ios/fastlane/.env"
+        run: |
+          touch ios/fastlane/.env
+          echo FASTLANE_USER=\${{ secrets.FASTLANE_USER }} > ${{env.FASTLANE_ENV_PATH}}
+          echo FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD=\${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }} >> ${{env.FASTLANE_ENV_PATH}}
+
+      - name: build appbundle
+        run: fvm flutter build appbundle
+
+      - name: Android Beta
+        run: cd android && fastlane beta
+
+      - name: iOS Beta
+        run: cd ios && fastlane beta
+```
 
 <br/><br/>
 
+android > fastlane > Fastfile 
+```yaml
+default_platform(:android)
+
+platform :android do
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Submit a new Beta Build to Crashlytics Beta"
+  lane :beta do
+    gradle(task: "clean bundleRelease")
+    upload_to_play_store(
+        track: 'internal',
+        skip_upload_changelogs: true,
+        aab: '../build/app/outputs/bundle/release/app-release.aab',
+    )
+  end
+
+  desc "Deploy a new version to the Google Play"
+  lane :deploy do
+    gradle(task: "clean assembleRelease")
+    upload_to_play_store
+  end
+end
+```
 
 <br/><br/>
 
+ios > fastlane > Fastfile
+```yaml
+default_platform(:ios)
 
-<br/><br/>
+platform :ios do
+  desc "Push a new beta build to TestFlight"
+  lane :beta do
+    increment_build_number(xcodeproj: "Runner.xcodeproj")
+    build_app(
+        workspace: "Runner.xcworkspace",
+        scheme: "Runner",
+        export_xcargs: "-allowProvisioningUpdates"
+    )
+    upload_to_testflight
+  end
+end
+
+```
+
+
