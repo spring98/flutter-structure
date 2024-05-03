@@ -183,7 +183,16 @@ Flutter 에서 제공하는 E2E 테스트 패키지인 integration_test 를 사�
 
 또한 실제 서버의 API 호출을 사용할 수 있어 라이브 테스트가 가능하였습니다.
 
+<br/>
 
+<img width="290" alt="스크린샷 2024-05-03 23 48 43" src="https://github.com/spring98/flutter-structure/assets/92755385/5a7100f7-7378-479e-a8a5-dd1a545beb62">
+
+<br/>
+<br/>
+
+수동 테스트의 경우 15분 33초 걸리던 작업이 9분 37초로 38% 개선에 성공하였습니다.
+
+<br/>
 
 <br/><br/>
 ## 자동배포 도입
@@ -225,6 +234,25 @@ AOS 의 경우 fastlane 명령 이전에 빌드파일을 생성하지만 iOS 는
 
 이러한 과정으로 두 플랫폼에 대해 내부 테스트 환경으로 배포 되며 
 
+<p align="center">  
+  <img src="https://github.com/spring98/flutter-structure/assets/92755385/7f195bfc-26d9-49ad-b4f3-9d4f91c26213" align="center" width="62%">  
+  <img width="5%">
+  <img src="https://github.com/spring98/flutter-structure/assets/92755385/b36703b7-1dc8-4dd7-97ef-881f7b8c7322" align="center" width="32%">
+</p>
+
+<br/>
+AOS 의 경우 수동 배포의 경우 2분 28초 걸리던 작업이 1분 42초로 31% 개선에 성공하였습니다.
+<br/><br/>
+
+<p align="center">  
+  <img src="https://github.com/spring98/flutter-structure/assets/92755385/f0f64f05-7392-4e7a-a503-af134d87bf31" align="center" width="50%">
+  <img width="5%">
+  <img src="https://github.com/spring98/flutter-structure/assets/92755385/d383dc26-9a25-4284-949d-2d4cdb0b84c1" align="center" width="40%">  
+</p>
+
+<br/>
+iOS 의 경우 수동 배포의 경우 11분 08초 걸리던 작업이 10분 05초로 9.1% 개선에 성공하였습니다.
+<br/><br/>
 
 <br/><br/>
 
