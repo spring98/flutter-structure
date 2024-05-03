@@ -215,10 +215,10 @@ AOS 의 경우 fastlane 명령 이전에 빌드파일을 생성하지만 iOS 는
 
 마지막으로 fastlane beta 실행이 되면 아래와 같이 작동하게 됩니다.
 
- - name: Android Beta
+ - name: Android Beta<br/>
         run: cd android && fastlane beta
 
- - name: iOS Beta
+ - name: iOS Beta<br/>
         run: cd ios && fastlane beta
 
 <br/>
