@@ -112,6 +112,13 @@ _maxSize = 5000 일 때는 2개의 데이터만 저장가능하지만, _maxSize 
 2. 생성된 대칭키와 초기벡터로 이미지 암호화하여 인메모리 및 로컬에 저장
 3. 생성된 대칭키와 초기벡터는 Android > KeyStore, iOS > KeyChain 에 저장
 
+<p align="center">  
+  <img src="https://github.com/spring98/flutter-structure/assets/92755385/d2f3cb55-a665-47b8-b065-8488e8119802" align="center" width="45%">
+  <img src="https://github.com/spring98/flutter-structure/assets/92755385/66aa7ef5-1aec-4702-8919-dac4a36d57a3" align="center" width="45%">  
+</p>
+
+좌측은 대칭키와 IV 로 AES, CBC 모드로 ImageByteData (Uint8List) 를 암호화 하는 과정을 나타냅니다. <br/>
+우측은 대칭키와 IV 로 AES, CBC 모드로 해당 데이터를 복호화 하는 과정을 나타냅니다.
 
 <br/>
 
